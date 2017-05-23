@@ -1,0 +1,10 @@
+2017-05-23 05:57:36,779   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 05:57:36,779  DEBUG  MainThread   db_wrapper.py    79:        get_dict|| execute sql=select c_title , c_title_s, c_description, c_uploader, c_upload_time , c_media_id, c_duration from t_ugc_video
+2017-05-23 05:57:59,112   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 05:57:59,113  DEBUG  MainThread   db_wrapper.py    79:        get_dict|| execute sql=select c_title , c_title_s, c_description, c_uploader, c_upload_time , c_media_id, c_duration from t_ugc_video
+2017-05-23 05:58:27,106   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 05:58:27,107  DEBUG  MainThread   db_wrapper.py    79:        get_dict|| execute sql=select c_title , c_title_s, c_description, c_uploader, c_upload_time , c_media_id, c_duration from t_ugc_video
+2017-05-23 05:58:50,045   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 05:58:50,045  DEBUG  MainThread   db_wrapper.py    79:        get_dict|| execute sql=select c_title , c_title_s, c_description, c_uploader, c_upload_time , c_media_id, c_duration from t_ugc_video
+2017-05-23 05:59:40,739   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 05:59:40,739  DEBUG  MainThread   db_wrapper.py    79:        get_dict|| execute sql=select c_title , c_title_s, c_description, c_uploader, c_upload_time , c_media_id, c_duration from t_ugc_video

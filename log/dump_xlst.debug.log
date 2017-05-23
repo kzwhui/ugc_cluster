@@ -1,0 +1,9 @@
+2017-05-23 02:10:14,917   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 02:10:14,917  DEBUG  MainThread   db_wrapper.py    79:        get_dict|| execute sql=select c_title , c_title_s, c_description, c_uploader, c_upload_time , c_media_id, c_duration from t_ugc_video
+2017-05-23 02:10:59,100   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 02:10:59,101  DEBUG  MainThread   db_wrapper.py    79:        get_dict|| execute sql=select c_title , c_title_s, c_description, c_uploader, c_upload_time , c_media_id, c_duration from t_ugc_video
+2017-05-23 02:11:29,352   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 02:11:29,352  DEBUG  MainThread   db_wrapper.py    79:        get_dict|| execute sql=select c_title , c_title_s, c_description, c_uploader, c_upload_time , c_media_id, c_duration from t_ugc_video
+2017-05-23 02:16:50,067   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 02:16:50,067  DEBUG  MainThread   db_wrapper.py    79:        get_dict|| execute sql=select c_title , c_title_s, c_description, c_uploader, c_upload_time , c_media_id, c_duration from t_ugc_video
+2017-05-23 02:16:50,311   INFO  MainThread   util.py       28:        data2xls|| suc to create game_video_info

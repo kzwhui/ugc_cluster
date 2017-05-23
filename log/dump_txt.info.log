@@ -1,0 +1,5 @@
+2017-05-23 05:57:36,779   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 05:57:59,112   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 05:58:27,106   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 05:58:50,045   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
+2017-05-23 05:59:40,739   INFO  MainThread   db_wrapper.py    30:       __connect|| suc connect to mysql, config={'passwd': 'zheng', 'host': '127.0.0.1', 'charset': 'utf8', 'db': 'd_ugc_video', 'user': 'root'}
