@@ -1,12 +1,19 @@
 #encoding=utf8
 
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 sys.path.append('../common/')
-#from util import *
+from util import *
 from db_wrapper import *
 import jieba
 import jieba.analyse
 import collections
+import math
+import string
+from zhon.hanzi import punctuation
+from sklearn.feature_extraction.text import CountVectorizer
+from union_find import *
 
 def is_not_digit(num):
     try:
@@ -15,44 +22,120 @@ def is_not_digit(num):
     except:
         return True
 
-db_conf = {
-        'host' : '127.0.0.1',
-        'user' : 'root',
-        'passwd' : 'zheng',
-        'db' : 'd_ugc_video',
-        'charset' : 'utf8'
-        }
-db_conn = DBWrapper(db_conf)
+def read_sentences():
+    sentences = open('data.txt', 'r').read().split('\n')
+    sentences = filter(lambda s: s, sentences)
+    return sentences
 
-user_to_sentences = collections.defaultdict(list)
+def get_key_words(sentences):
+    #jieba.analyse.set_stop_words('../extra_words/stop_words.txt')
+    sentence_keys = []
+    all_keys = set()
+    for sentence in sentences:
+        tags = jieba.analyse.extract_tags(sentence, topK = 10)
+        tags = filter(is_not_digit, tags)
+        sentence_keys.append(tags)
+        all_keys |= set(tags)
 
-f = open('../dump/video_info.txt', 'r')
-f.readline()
-while True:
-    line = f.readline()
-    if not line:
-        break
+    return all_keys, sentence_keys
 
-    items = line.split('\t')
-    if len(items) < 7:
-        continue
-    user_to_sentences[items[6]].append(items[0])
+def count_word_frequence(corpus):
+    vectorizer = CountVectorizer(min_df=1)
+    X = vectorizer.fit_transform(corpus)
+    return vectorizer.get_feature_names(), X.toarray()
 
-print 'sen num=%s' % len(user_to_sentences)
+def count_cosine(array):
+    row_len = len(array)
+    col_len = len(array[0])
+    ans = []
+    for i in range(row_len):
+        sub_ans = [0 for i in range(0, row_len)]
+        ans.append(sub_ans)
+        
+    for i in range(0, row_len):
+        for j in range(i + 1, row_len):
+            a = 0
+            b = 0
+            c = 0
+            for col in range(0, col_len):
+                a += array[i][col] * array[j][col]
+                b += array[i][col] * array[i][col]
+                c += array[j][col] * array[j][col]
 
-user_name = '德古拉Dracula'
-keywords = []
-key_set = set()
-jieba.analyse.set_stop_words('/home/zheng/tmp/jieba/extra_dict/stop_words.txt')
-for sentence in user_to_sentences[user_name]:
-    keys = jieba.analyse.extract_tags(sentence, topK=10)
-    keys = filter(is_not_digit, keys)
-    keywords.append(keys)
-    key_set |= set(keys)
+            cosine = 1.0 * a / (math.sqrt(b) * math.sqrt(c))
+            ans[i][j] = ans[j][i] = cosine
 
-#for i in range(0, 10):
-#    print user_to_sentences[user_name][i]
-#    print ', '.join(keywords[i])
+    return ans
 
-print 'key num=', len(key_set)
-print 'key set: ',  ', '.join(key_set)
+def get_classify(sentences, similarity_array):
+    similarity_tag = 0.15
+    classified_barrel = collections.defaultdict(set)
+
+    for i in range(0, len(sentences)):
+        for j in range(i + 1, len(sentences)):
+            if similarity_array[i][j] >= similarity_tag and (find(i) != find(j)):
+                union(i, j)
+
+    for i in range(0, len(sentences)):
+        root = find(i)
+        classified_barrel[root].add(root)
+        classified_barrel[root].add(i)
+
+    return classified_barrel
+
+def remove_apostrophe(s):
+    exclude = set(string.punctuation)
+    exclude |= set(punctuation)
+    s = ''.join(ch if ch not in exclude else '' for ch in s.decode('utf8'))
+    return s
+
+sentences = read_sentences()
+print '\n'.join(sentences)
+print ''
+
+all_keys, sentence_keys = get_key_words(sentences)
+for keys in sentence_keys:
+    print ', '.join(keys)
+    print ''
+print ''
+print 'key num=', len(all_keys)
+print 'jieba keys = ', ', '.join(all_keys)
+
+cut_sentences_list = []
+cnt = 0
+for sen in sentences:
+    sen = remove_apostrophe(sen)
+    tags = jieba.cut(sen)
+    tags = filter(is_not_digit, tags)
+    key_set = set()
+    key_set |= set(sen.split('!'))
+    key_set |= set(sen.split('-'))
+    key_set |= set(sen.split())
+    #key_set |= set(tags)
+    key_set |= set(sentence_keys[cnt])
+    #line = ' '.join(tags)  + '' + ' '.join(sentence_keys[cnt])#+ ' ' + sen + ' '.join(sen.split('-'))
+    line = ' '.join(key_set)
+    print 'line: ', line
+    cnt += 1
+    #print ' '.join(tags)
+    #print line
+    cut_sentences_list.append(line)
+sk_learn_keys, sk_learn_array = count_word_frequence(cut_sentences_list)
+
+print 'sk learn keys: ', ', '.join(sk_learn_keys)
+print 'sk learn array: ', sk_learn_array
+
+cos_ans = count_cosine(sk_learn_array)
+print cos_ans
+print 'cosine'
+for i in range(0, len(cos_ans)):
+    for j in range(i + 1, len(cos_ans)):
+        print sentences[i], '\t --- \t', sentences[j], '\t cos = \t', cos_ans[i][j]
+
+classified_barrel = get_classify(sentences, cos_ans)
+cnt = 1
+for k, v in classified_barrel.items():
+    print '\nbarrel %s:' % cnt
+    cnt += 1
+    print '\n'.join([sentences[i] for i in v])
+    print ''
