@@ -29,7 +29,7 @@ def read_sentences():
     return sentences
 
 def get_key_words(sentences):
-    #jieba.analyse.set_stop_words('../extra_words/stop_words.txt')
+    jieba.analyse.set_stop_words('../extra_words/stop_words.txt')
     sentence_keys = []
     all_keys = set()
     for sentence in sentences:
@@ -63,13 +63,16 @@ def count_cosine(array):
                 b += array[i][col] * array[i][col]
                 c += array[j][col] * array[j][col]
 
-            cosine = 1.0 * a / (math.sqrt(b) * math.sqrt(c))
+            cosine = 0
+            if b > 0 and c > 0:
+                cosine = 1.0 * a / (math.sqrt(b) * math.sqrt(c))
             ans[i][j] = ans[j][i] = cosine
 
     return ans
 
-def get_classify(sentences, similarity_array):
-    similarity_tag = 0.15
+def get_classify(sentences, similarity_array, lowest_similarity):
+    print 'lowest_similarity=', lowest_similarity
+    similarity_tag = lowest_similarity
     classified_barrel = collections.defaultdict(set)
 
     for i in range(0, len(sentences)):
@@ -105,66 +108,101 @@ def get_header_key(sentences):
     for i in range(len(sentences)):
         for j in range(i + 1, len(sentences)):
             prefix = get_prefix_header_key(sentences[i], sentences[j])
-            if len(prefix) > 2:
+            if len(prefix) < 2:
+                continue
+            flag = True
+            for k in header_keys:
+                if prefix in k:
+                    flag = False
+            if flag:
                 header_keys.add(prefix)
 
     return header_keys
 
+def get_cut_words(sentences):
+    sentences_cut_words = []
+    df_words = {}
+    all_cut_words = set()
+    stop_words = set(open('../extra_words/stop_words.txt', 'r').read().split())
+    for sen in sentences:
+        tags = jieba.cut(sen, cut_all = True)
+        xtags = filter(lambda x : x and x not in stop_words, tags)
+        for k in xtags:
+            if df_words.has_key(k):
+                df_words[k] += 1
+            else:
+                df_words[k] = 1
+        all_cut_words |= set(xtags)
+        sentences_cut_words.append(set(xtags))
+
+    return sentences_cut_words, df_words, all_cut_words
+
+def get_topn_keys(sentences_cut_words, df_words, topn):
+    print 'topn, num=%s' % topn
+    sentences_top_keys = []
+    for words in sentences_cut_words:
+        words_score = []
+        for w in words:
+            wd = {}
+            wd['name'] = w
+            wd['score'] = df_words[w]
+            words_score.append(wd)
+
+        words_score = sorted(words_score, key=lambda x: x['score'], reverse=True)
+
+        top_keys = set()
+        for i in range(0, min(topn, len(words_score))):
+            top_keys.add(words_score[i]['name'])
+        sentences_top_keys.append(top_keys)
+
+    return sentences_top_keys
+
 sentences = read_sentences()
-#print '\n'.join(sentences)
-#print ''
+sentences_cut_words, df_words, all_cut_words = get_cut_words(sentences)
+print 'all_cut_words, num=', len(all_cut_words)
+#print 'each sentence keys'
+#for cut_words in sentences_cut_words:
+#    print '/'.join(cut_words)
+#    print ''
+
+#print 'each key, doc num'
+#for k, v in df_words.items():
+#    print 'key=%s, doc num=%s' % (k, v)
+
+each_sentence_top_key_num = 0
+for keys in sentences_cut_words:
+    each_sentence_top_key_num += len(keys)
+sentences_top_keys = get_topn_keys(sentences_cut_words, df_words, each_sentence_top_key_num / len(sentences_cut_words))
+#print 'each sentence top key'
+#for keys in sentences_top_keys:
+#    print '/'.join(keys)
 
 header_keys = get_header_key(sentences)
 print 'header keys: ', '/'.join(header_keys)
-print ''
-
-all_keys, sentence_keys = get_key_words(sentences)
-#for keys in sentence_keys:
-#    print ', '.join(keys)
-#    print ''
-#print ''
-#print 'key num=', len(all_keys)
-#print 'jieba keys = ', ', '.join(all_keys)
+for i in range(len(sentences_top_keys)):
+    for k in header_keys:
+        if k in sentences[i]:
+            sentences_top_keys[i].add(k)
 
 cut_sentences_list = []
-cnt = 0
-for sen in sentences:
-    key_set = set()
-
-    # add header key
-    #for h_key in header_keys:
-    #    if h_key in sen:
-    #        key_set.add(h_key)
-
-    #sen = re.sub(r'\w+', ' ', sen)
-    sen = remove_apostrophe(sen)
-    tags = jieba.cut(sen)
-    tags = filter(is_not_digit, tags)
-    #key_set |= set(sen.split('!'))
-    #key_set |= set(sen.split('-'))
-    #key_set |= set(sen.split())
-    #key_set |= set(tags)
-    key_set |= set(sentence_keys[cnt])
-
-    #line = ' '.join(tags)  + '' + ' '.join(sentence_keys[cnt])#+ ' ' + sen + ' '.join(sen.split('-'))
-    line = ' '.join(key_set)
-    print 'line: ', line
-    cnt += 1
-    #print ' '.join(tags)
+for keys in sentences_top_keys:
+    line = ' '.join(keys)
+#    print 'sk line: ', line
     cut_sentences_list.append(line)
-sk_learn_keys, sk_learn_array = count_word_frequence(cut_sentences_list)
 
+sk_learn_keys, sk_learn_array = count_word_frequence(cut_sentences_list)
+print 'sk leanr keys, num=', len(sk_learn_keys)
 #print 'sk learn keys: ', ', '.join(sk_learn_keys)
-#print 'sk learn array: ', sk_learn_array
+#print 'sk learn array:\n', sk_learn_array
 
 cos_ans = count_cosine(sk_learn_array)
-print cos_ans
-print 'cosine'
-for i in range(0, len(cos_ans)):
-    for j in range(i + 1, len(cos_ans)):
-        print sentences[i], '\t --- \t', sentences[j], '\t cos = \t', cos_ans[i][j]
+#print 'cosine'
+#for i in range(0, len(cos_ans)):
+#    for j in range(i + 1, len(cos_ans)):
+#        print sentences[i], '\t --- \t', sentences[j], '\t cos = \t', cos_ans[i][j]
 
-classified_barrel = get_classify(sentences, cos_ans)
+lowest_similarity = 1.0 * len(sk_learn_keys) / len(all_cut_words)
+classified_barrel = get_classify(sentences, cos_ans, lowest_similarity)
 cnt = 1
 for k, v in classified_barrel.items():
     print '\nbarrel %s:' % cnt

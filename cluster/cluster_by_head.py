@@ -118,56 +118,12 @@ header_keys = get_header_key(sentences)
 print 'header keys: ', '/'.join(header_keys)
 print ''
 
-all_keys, sentence_keys = get_key_words(sentences)
-#for keys in sentence_keys:
-#    print ', '.join(keys)
-#    print ''
-#print ''
-#print 'key num=', len(all_keys)
-#print 'jieba keys = ', ', '.join(all_keys)
-
-cut_sentences_list = []
-cnt = 0
-for sen in sentences:
-    key_set = set()
-
-    # add header key
-    #for h_key in header_keys:
-    #    if h_key in sen:
-    #        key_set.add(h_key)
-
-    #sen = re.sub(r'\w+', ' ', sen)
-    sen = remove_apostrophe(sen)
-    tags = jieba.cut(sen)
-    tags = filter(is_not_digit, tags)
-    #key_set |= set(sen.split('!'))
-    #key_set |= set(sen.split('-'))
-    #key_set |= set(sen.split())
-    #key_set |= set(tags)
-    key_set |= set(sentence_keys[cnt])
-
-    #line = ' '.join(tags)  + '' + ' '.join(sentence_keys[cnt])#+ ' ' + sen + ' '.join(sen.split('-'))
-    line = ' '.join(key_set)
-    print 'line: ', line
-    cnt += 1
-    #print ' '.join(tags)
-    cut_sentences_list.append(line)
-sk_learn_keys, sk_learn_array = count_word_frequence(cut_sentences_list)
-
-#print 'sk learn keys: ', ', '.join(sk_learn_keys)
-#print 'sk learn array: ', sk_learn_array
-
-cos_ans = count_cosine(sk_learn_array)
-print cos_ans
-print 'cosine'
-for i in range(0, len(cos_ans)):
-    for j in range(i + 1, len(cos_ans)):
-        print sentences[i], '\t --- \t', sentences[j], '\t cos = \t', cos_ans[i][j]
-
-classified_barrel = get_classify(sentences, cos_ans)
 cnt = 1
-for k, v in classified_barrel.items():
-    print '\nbarrel %s:' % cnt
+for h_key in header_keys:
+    print 'barrel %s' % cnt
     cnt += 1
-    print '\n'.join([sentences[i] for i in v])
+    for sen in sentences:
+        if h_key in sen:
+            print sen
+
     print ''
