@@ -15,6 +15,8 @@ import string
 from zhon.hanzi import punctuation
 from sklearn.feature_extraction.text import CountVectorizer
 from union_find import *
+from sklearn.cluster import KMeans
+from sklearn.feature_extraction.text import TfidfTransformer
 
 def is_not_digit(num):
     try:
@@ -105,7 +107,13 @@ def get_header_key(sentences):
     for i in range(len(sentences)):
         for j in range(i + 1, len(sentences)):
             prefix = get_prefix_header_key(sentences[i], sentences[j])
-            if len(prefix) > 2:
+            if len(prefix) < 2:
+                continue
+            flag = True
+            for k in header_keys:
+                if prefix in k:
+                    flag = False
+            if flag:
                 header_keys.add(prefix)
 
     return header_keys
@@ -115,8 +123,8 @@ sentences = read_sentences()
 #print ''
 
 header_keys = get_header_key(sentences)
-print 'header keys: ', '/'.join(header_keys)
-print ''
+#print 'header keys: ', '/'.join(header_keys)
+#print ''
 
 all_keys, sentence_keys = get_key_words(sentences)
 #for keys in sentence_keys:
@@ -137,7 +145,7 @@ for sen in sentences:
     #        key_set.add(h_key)
 
     #sen = re.sub(r'\w+', ' ', sen)
-    sen = remove_apostrophe(sen)
+    #sen = remove_apostrophe(sen)
     tags = jieba.cut(sen)
     tags = filter(is_not_digit, tags)
     #key_set |= set(sen.split('!'))
@@ -148,26 +156,56 @@ for sen in sentences:
 
     #line = ' '.join(tags)  + '' + ' '.join(sentence_keys[cnt])#+ ' ' + sen + ' '.join(sen.split('-'))
     line = ' '.join(key_set)
-    print 'line: ', line
+    #print 'line: ', line
     cnt += 1
     #print ' '.join(tags)
     cut_sentences_list.append(line)
 sk_learn_keys, sk_learn_array = count_word_frequence(cut_sentences_list)
 
+transformer = TfidfTransformer()
+tfidf = transformer.fit_transform(sk_learn_array)
+sk_learn_array = tfidf.toarray()
+#print sk_learn_array
+
 #print 'sk learn keys: ', ', '.join(sk_learn_keys)
 #print 'sk learn array: ', sk_learn_array
 
-cos_ans = count_cosine(sk_learn_array)
-print cos_ans
-print 'cosine'
-for i in range(0, len(cos_ans)):
-    for j in range(i + 1, len(cos_ans)):
-        print sentences[i], '\t --- \t', sentences[j], '\t cos = \t', cos_ans[i][j]
+#cos_ans = count_cosine(sk_learn_array)
+#print cos_ans
+#print 'cosine'
+#for i in range(0, len(cos_ans)):
+#    for j in range(i + 1, len(cos_ans)):
+#        print sentences[i], '\t --- \t', sentences[j], '\t cos = \t', cos_ans[i][j]
+#
+#classified_barrel = get_classify(sentences, cos_ans)
+#cnt = 1
+#for k, v in classified_barrel.items():
+#    print '\nbarrel %s:' % cnt
+#    cnt += 1
+#    print '\n'.join([sentences[i] for i in v])
+#    print ''
 
-classified_barrel = get_classify(sentences, cos_ans)
-cnt = 1
-for k, v in classified_barrel.items():
-    print '\nbarrel %s:' % cnt
+
+print 'header key num=%s' % len(header_keys)
+cluster_num = len(header_keys)
+kmeans = KMeans(n_clusters=cluster_num, random_state=0)
+kmeans.fit(sk_learn_array)
+res = kmeans.predict(sk_learn_array)
+
+#print res
+
+stacks = [set() for i in range(cluster_num)]
+for i in range(len(sentences)):
+    stacks[res[i]].add(i)
+
+#cnt = 0
+#for s in stacks:
+#    print 'num: %s' % cnt 
+#    cnt += 1
+#    print s
+cnt = 0
+for s in stacks:
+    print '\nbarrier %s' % cnt
     cnt += 1
-    print '\n'.join([sentences[i] for i in v])
-    print ''
+    for i in s:
+        print sentences[i]
