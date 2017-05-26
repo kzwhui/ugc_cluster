@@ -42,7 +42,7 @@ def get_new_center_point(point_vectors, stack):
         for row in stack:
             new_center_vector[col] += point_vectors[row][col]
 
-    new_center_vector = map(lambda x: x / len(stack), new_center_vector)
+    new_center_vector = map(lambda x: 1.0 * x / len(stack), new_center_vector)
     return new_center_vector
 
 def k_means(vectors, k):
