@@ -64,7 +64,7 @@ def count_cosine(array):
                 c += array[j][col] * array[j][col]
 
             cosine = 0
-            if b > 0 and c > 0:
+            if (b + c) > 0:
                 cosine = 1.0 * a / (math.sqrt(b) * math.sqrt(c))
             ans[i][j] = ans[j][i] = cosine
 
