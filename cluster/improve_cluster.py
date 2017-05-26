@@ -14,6 +14,7 @@ import math
 import string
 from zhon.hanzi import punctuation
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.cluster import KMeans
 from union_find import *
 
 def is_not_digit(num):
@@ -193,19 +194,47 @@ for keys in sentences_top_keys:
 sk_learn_keys, sk_learn_array = count_word_frequence(cut_sentences_list)
 print 'sk leanr keys, num=', len(sk_learn_keys)
 #print 'sk learn keys: ', ', '.join(sk_learn_keys)
-#print 'sk learn array:\n', sk_learn_array
+#print 'sk learn array:'
+#for ar in sk_learn_array:
+#    print ', '.join('%s' % x for x in ar)
 
-cos_ans = count_cosine(sk_learn_array)
+#cos_ans = count_cosine(sk_learn_array)
 #print 'cosine'
 #for i in range(0, len(cos_ans)):
 #    for j in range(i + 1, len(cos_ans)):
 #        print sentences[i], '\t --- \t', sentences[j], '\t cos = \t', cos_ans[i][j]
 
-lowest_similarity = 1.0 * len(sk_learn_keys) / len(all_cut_words)
-classified_barrel = get_classify(sentences, cos_ans, lowest_similarity)
+#lowest_similarity = 1.0 * len(sk_learn_keys) / len(all_cut_words)
+#classified_barrel = get_classify(sentences, cos_ans, lowest_similarity)
+#cnt = 1
+#for k, v in classified_barrel.items():
+#    print '\nbarrel %s:' % cnt
+#    cnt += 1
+#    print '\n'.join([sentences[i] for i in v])
+#    print ''
+
+# 使用k means均值算法
+print 'header key num=%s' % len(header_keys)
+cluster_num = 15 
+kmeans = KMeans(n_clusters=cluster_num, random_state=0)
+kmeans.fit(sk_learn_array)
+res = kmeans.predict(sk_learn_array)
+
+#print res
+
+stacks = [set() for i in range(cluster_num)]
+for i in range(len(sentences)):
+    stacks[res[i]].add(i)
+
+#cnt = 0
+#for s in stacks:
+#    print 'num: %s' % cnt 
+#    cnt += 1
+#    print s
 cnt = 1
-for k, v in classified_barrel.items():
-    print '\nbarrel %s:' % cnt
+for s in stacks:
+    print 'barrier %s' % cnt
     cnt += 1
-    print '\n'.join([sentences[i] for i in v])
+    for i in s:
+        print sentences[i]
     print ''

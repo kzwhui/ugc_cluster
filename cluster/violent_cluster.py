@@ -27,7 +27,6 @@ def remove_apostrophe(s):
 def read_sentences():
     oral_sentences = open('data.txt', 'r').read().split('\n')
     oral_sentences = filter(lambda s: s, oral_sentences)
-    oral_sentences = sorted(oral_sentences)
     sentences = map(remove_apostrophe, oral_sentences)
     sentences = map(lambda x: re.sub('\s', '', x), sentences)
     sentences = map(lambda x: re.sub('\d', '', x), sentences)
@@ -101,79 +100,16 @@ def get_header_key(sentences, df_words):
     return header_keys
 
 sentences, oral_sentences = read_sentences()
-sentences_cut_words, df_words, all_cut_words = get_cut_words(sentences)
+df_words = {}
 header_keys = get_header_key(sentences, df_words)
-
-#print 'oral sentences: '
-#print '\n'.join(oral_sentences)
-#print ''
-#print 'sentences: '
-#print '\n'.join(sentences)
-#print ''
-#print 'all cut words: ', '/'.join(all_cut_words)
-#print 'header_keys: ', '/'.join(header_keys)
-#print 'df_words', ', '.join("%s = %s" % (k, v) for k, v in df_words.items())
-#print ''
-
-#print 'header keys df:'
-#for key in header_keys:
-#    print key, ' ---> ', df_words[key]
-#print ''
-
-corpus = []
-sen_index = 0
-cnt = 0
-for words in sentences_cut_words:
-    for k in header_keys:
-        if sentences[cnt].startswith(k):
-            words.add(k)
-    line = ' '.join(words)
-#    print 'line: ', line
-    corpus.append(line)
-    cnt += 1
-
-vectorizer = CountVectorizer()
-word_frequence = vectorizer.fit_transform(corpus).toarray()
-
-#print 'sk_learn_keys: ', '/'.join(vectorizer.get_feature_names())
-#print 'before: ', word_frequence
-
-# 对词频中每个元素均乘以相应的df
-keys = vectorizer.get_feature_names()
-for col in range(len(keys)):
-    for row in range(len(word_frequence)):
-        if df_words.has_key(keys[col]):
-            word_frequence[row][col] *= df_words[keys[col]]
-            if keys[col] in header_keys:
-                word_frequence[row][col] *= 4
-
-#print 'later: ', word_frequence
-
-
-#transformer = TfidfTransformer()
-#weight = transformer.fit_transform(word_frequence).toarray()
-#print weight
-
-all_header_key_sens_num = 0
-for key in header_keys:
-    if df_words.has_key(key):
-        all_header_key_sens_num += df_words[key]
-
-#print all_header_key_sens_num
-cluster_num = len(sentences) - all_header_key_sens_num + len(header_keys)
-print 'cluster num=%s' % cluster_num
-kmeans = KMeans(n_clusters=cluster_num)
-#kmeans.fit(weight)
-kmeans.fit(word_frequence)
-res = kmeans.labels_
-
-stacks = [set() for i in range(cluster_num)]
+header_to_ids = collections.defaultdict(set)
 for i in range(len(sentences)):
-    stacks[res[i]].add(i)
+    for head in header_keys:
+        if sentences[i].startswith(head):
+            header_to_ids[head].add(i)
 
 cnt = 0
-for s in stacks:
-    print '\nstack %s' % cnt
+for k, v in header_to_ids.items():
+    print '\nstack = %s, cid name ---- %s' % (cnt, k)
+    print '\n'.join(oral_sentences[i] for i in v)
     cnt += 1
-    for i in s:
-        print oral_sentences[i]
